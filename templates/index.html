@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Messaging Backend Testpage</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <style media="screen">
+        .center{
+          text-align: center;
+        }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+        <div class="row center">
+            <div class="twelve columns"><h1 id="test-status">Testing API  .....</h1></div>
+        </div>
+
+        <div class="row">
+            <div class="twelve columns">
+                <table class="u-full-width">
+                  <tr>
+                    <td>API Endpoint</td>
+                    <td>Status</td>
+                  </tr>
+
+                  <tr>
+                    <td>/api/auth/register</td>
+                    <td id="register-status">...</td>
+                  </tr>
+
+                  <tr>
+                    <td>/api/auth/login</td>
+                    <td id="login-status">...</td>
+                  </tr>
+
+                  <tr>
+                    <td>/api/auth/test-token</td>
+                    <td id="test-token-status">...</td>
+                  </tr>
+
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script
+    			  src="http://code.jquery.com/jquery-3.3.1.min.js"
+    			  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    			  crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+
+      $(document).ready(function(){
+       var testRegister = function() {
+
+          return new Promise(function(resolve, reject){
+              var data = {"username": "test-user", "password": "test-1234"};
+              $.post("http://localhost:8080/api/auth/register", JSON.stringify(data))
+                .done(function(){
+                  $("#register-status").html("User creaed, OK");
+                  resolve();
+                })
+                .fail(function(data){
+
+                  if (data.responseJSON.error ==  "Failed to register user. Username taken.") {
+                    $("#register-status").html("User created before, OK");
+                    resolve();
+                  } else {
+                    reject();
+                  }
+                });
+          });
+       };
+
+       var testLogin = function() {
+
+          return new Promise(function(resolve, reject){
+              var data = {"username": "test-user", "password": "test-1234"};
+              $.post("http://localhost:8080/api/auth/login", JSON.stringify(data))
+                .done(function(data){
+                  $("#login-status").html("User login, OK, session_key: " + data.session_key);
+                  resolve(data.session_key);
+                })
+                .fail(function(){
+                  $("#login-status").html("User login, Failed");
+                  reject();
+                });
+          });
+       };
+
+       var testToken = function(token) {
+
+          return new Promise(function(resolve, reject){
+            $.ajax({
+              type: "POST",
+              url: "http://localhost:8080/api/auth/test-token",
+              beforeSend: function (xhr) {
+                  xhr.setRequestHeader ("Authorization", "Token " + token);
+              }
+            })
+            .done(function(data){
+              $("#test-token-status").html(data.message);
+              resolve();
+            })
+            .fail(function(){
+              $("#test-token-status").html("Failed testing token");
+              reject();
+            });
+          });
+       };
+
+       testRegister()
+        .then(testLogin)
+        .then(testToken)
+        .then(function() {
+          $("#test-status").html("Testing API finished!");
+        })
+        .catch(function(e){
+          console.log(e);
+          $("#test-status").html("Testing API Failed", e);
+        });
+      });
+    </script>
+
+  </body>
+</html>

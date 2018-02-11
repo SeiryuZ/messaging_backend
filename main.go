@@ -2,39 +2,26 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/jinzhu/gorm"
-
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/seiryuz/messaging_backend/api"
+	"github.com/seiryuz/messaging_backend/models"
 )
-
-type User struct {
-	gorm.Model
-	Username string
-	Password string
-}
 
 func main() {
 	log.Println("Starting Server .....")
-
-	log.Println("Initializing DB .....")
-	db, err := gorm.Open("sqlite3", "test.db")
-	if err != nil {
-		panic("failed to connect database")
-	}
-	defer db.Close()
-
-	// Migrate the schema
-	log.Println("Migrate DB .....")
-	db.AutoMigrate(&User{})
+	models.InitDB()
 
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+
+	r.LoadHTMLGlob("templates/*")
+
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
 	})
+
+	api.SetupRoutes(r)
+
 	r.Run() // listen and serve on 0.0.0.0:8080
 }

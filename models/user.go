@@ -15,6 +15,9 @@ type User struct {
 	Username   string `json:"username" binding:"required" gorm:"type:varchar(100);unique_index"`
 	Password   string `json:"password" binding:"required"`
 	SessionKey string
+
+	OutgoingMessages []Message `gorm:"foreignkey:From"`
+	IncomingMessages []Message `gorm:"foreignkey:To"`
 }
 
 func (u *User) Index() {

@@ -20,5 +20,5 @@ func InitDB() {
 
 	// Migrate the schema
 	log.Println("Migrate DB .....")
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &Message{})
 }
